@@ -19,7 +19,7 @@ function Signup(){
      })
  
      const handleInput = (event) => {
-         setValues(prev => ({...prev,[event.target.name]:[event.target.value]}))
+         setValues(prev => ({...prev,[event.target.name]: [event.target.value]}))
      }
  
     const SubmitForm = (e) => {
@@ -28,12 +28,7 @@ function Signup(){
      if(errors.name === "" && errors.email === "" && errors.password === ""){
         axios.post("http://localhost:8082/signup",values)
         .then(res => {
-            if (res.data==="Error"){
-                console.log(res);
-            }
-            else{
                 navigate("/");
-            }
             })
         .catch(err => console.log(err));
      }

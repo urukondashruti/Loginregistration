@@ -1,51 +1,62 @@
 const express = require("express");
 const mysql = require("mysql");
-const cors=require("cors");
-const app=express();
+const cors = require("cors");
+const app = express();
 app.use(cors());
 app.use(express.json());
+const bodyParser = require("body-parser");
+app.use(bodyParser.json());
 
-const db = mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"",
-    database:"signup"
-})
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'root123',
+  database: 'signupform',
+});
 
-app.post("/signup",(req,res) => {
-    const sql = "INSERT INTO login (`name`,`email`,`password`) VALUES (?)";
-    const values = [
-        req.body.name,
-        req.body.email,
-        req.body.password,
-    ]
-    db.query(sql,[values],(err,data) => {
-        if(err){
-            return res.json("Error")
-        }
-        return res.json(data);
-    })
-})
+connection.connect(function(err) {
+  if (err) {
+    console.log("Error connecting to MySQL database: " + err.stack);
+    return;
+  }
+  console.log("Connected to MySQL database with threadId: " + connection.threadId);
+});
 
-app.post("/login",(req ,res) => {
-    const sql = "SELECT * FROM login WHERE `email`=? AND `password`=?";
-    const values = [
-        req.body.email,
-        req.body.password,
-    ]
-    db.query(sql,[values],(err,data) => {
-        if(err){
-           return res.json("Error")
-        }
-        if (data.length > 0){
-            return res.json("Success")
-        }
-        else{
-            return res.json("failed")
-        }
-    })
-})
+app.post("/signup", (req, res) => {
+  const sql = "INSERT INTO user VALUES (?, ?, ?)";
+  const name = req.body.name;
+  const email = req.body.email;
+  const password = req.body.password;
 
-app.listen(8082,()=>{
-    console.log("listening")
-})
+  connection.query(sql, [name, email, password], (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.json("Error");
+    }
+    console.log(data);
+    return res.json(data);
+  });
+});
+
+app.post("/login", (req, res) => {
+  const sql = "SELECT * FROM user WHERE `email`=? AND `password`=?";
+  const email = req.body.email;
+  const password = req.body.password;
+
+  connection.query(sql, [email, password], (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json("Success");
+    } else {
+      return res.json("Failed");
+    }
+  });
+});
+
+const PORT = process.env.PORT || 8082;
+app.listen(PORT, () => {
+  console.log("Server is running on port " + PORT);
+});
